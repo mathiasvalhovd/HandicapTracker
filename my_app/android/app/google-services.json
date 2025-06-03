@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "151590535937",
+    "project_id": "handicap-tracker-1d0ec",
+    "storage_bucket": "handicap-tracker-1d0ec.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:151590535937:android:20432151ca0a6879f55100",
+        "android_client_info": {
+          "package_name": "com.example.my_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA2_yI-n0k8_hKqalywEJO01T4ZpVkrjIE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
