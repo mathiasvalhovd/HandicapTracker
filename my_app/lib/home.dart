@@ -39,20 +39,34 @@ class HomeScreen extends StatelessWidget {
                     label: const Text('Add Round'),
                     onPressed: () async {
                       final uid = FirebaseAuth.instance.currentUser!.uid;
-                      final userDoc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+                      final userDoc = await FirebaseFirestore.instance
+                          .collection('users')
+                          .doc(uid)
+                          .get();
                       final golfApiToken = userDoc.data()?['golfCourseApiToken'];
                       if (golfApiToken == null) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('GolfCourseAPI token missing. Please activate your account.')),
+                          const SnackBar(
+                              content: Text(
+                                  'GolfCourseAPI token missing. Please activate your account.')),
                         );
                         return;
                       }
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => AddRoundPage(golfApiToken: golfApiToken),
+                          builder: (context) =>
+                              AddRoundPage(golfApiToken: golfApiToken),
                         ),
                       );
+                    },
+                  ),
+                  const SizedBox(height: 24),
+                  ElevatedButton.icon(
+                    icon: const Icon(Icons.person),
+                    label: const Text('Manage Profile'),
+                    onPressed: () {
+                      Navigator.pushNamed(context, 'profile');
                     },
                   ),
                 ],
