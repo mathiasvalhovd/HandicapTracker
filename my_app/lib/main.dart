@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'profile_screen.dart';
 
 import 'home.dart';
 import 'authentication/login.dart';
 import 'authentication/register.dart';
-import 'authentication/enter_api_key_screen.dart'; // <--- Add this import!
+import 'authentication/enter_api_key_screen.dart';
+// <--- Add this import!
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,7 +32,8 @@ class MyApp extends StatelessWidget {
         'login': (context) => const LoginScreen(),
         'register': (context) => const RegisterScreen(),
         'home': (context) => const HomeScreen(),
-        'enter_api_key': (context) => const EnterApiKeyScreen()
+        'enter_api_key': (context) => const EnterApiKeyScreen(),
+        'profile': (context) => const ProfileScreen(),
       },
     );
   }
