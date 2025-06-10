@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:my_app/hc_logic/edit_round_screen.dart';
 import 'firebase_options.dart';
 
 import 'home.dart';
 import 'authentication/login.dart';
 import 'authentication/register.dart';
 import 'authentication/enter_api_key_screen.dart'; // <--- Add this import!
+import 'hc_logic/rounds_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,10 +32,22 @@ class MyApp extends StatelessWidget {
         'login': (context) => const LoginScreen(),
         'register': (context) => const RegisterScreen(),
         'home': (context) => const HomeScreen(),
-        'enter_api_key': (context) => const EnterApiKeyScreen()
+        'enter_api_key': (context) => const EnterApiKeyScreen(),
+        'rounds': (context) => const RoundsScreen(),
+        // Don't put edit_round here!
+      },
+      onGenerateRoute: (settings) {
+        if (settings.name == 'edit_round') {
+          final args = settings.arguments as Map<String, dynamic>;
+          return MaterialPageRoute(
+            builder: (context) => EditRoundScreen(
+              roundId: args['roundId'],
+              initialData: args['initialData'],
+            ),
+          );
+        }
+        return null; // fallback
       },
     );
   }
 }
-
-// Your MyHomePage class stays the same...
