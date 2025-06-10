@@ -14,6 +14,7 @@ class EditRoundScreen extends StatefulWidget {
 
 class _EditRoundScreenState extends State<EditRoundScreen> {
   late TextEditingController _scoreController;
+  late TextEditingController _commentController;
   late String _courseName;
   late DateTime _date;
   bool _isSaving = false;
@@ -25,11 +26,14 @@ class _EditRoundScreenState extends State<EditRoundScreen> {
     _date = (widget.initialData['date'] as Timestamp).toDate();
     _scoreController = TextEditingController(
         text: (widget.initialData['grossScore'] ?? '').toString());
+    _commentController = TextEditingController(
+        text: (widget.initialData['comment'] ?? '').toString());
   }
 
   @override
   void dispose() {
     _scoreController.dispose();
+    _commentController.dispose();
     super.dispose();
   }
 
@@ -39,6 +43,7 @@ class _EditRoundScreenState extends State<EditRoundScreen> {
       final courseRating = (widget.initialData['courseRating'] as num?)?.toDouble() ?? 72.0;
       final slopeRating = (widget.initialData['slopeRating'] as num?)?.toInt() ?? 113;
       final newGrossScore = int.tryParse(_scoreController.text) ?? 0;
+      final newComment = _commentController.text.trim();
 
       // Calculate new differential
       final newScoreDifferential = calculateScoreDifferential(
@@ -51,6 +56,7 @@ class _EditRoundScreenState extends State<EditRoundScreen> {
       await widget.initialData['ref'].update({
         'grossScore': newGrossScore,
         'scoreDifferential': newScoreDifferential,
+        'comment': newComment,
       });
 
       // Recalculate ALL handicapIndexAfterRound fields for this user!
@@ -85,6 +91,10 @@ class _EditRoundScreenState extends State<EditRoundScreen> {
               controller: _scoreController,
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(labelText: 'Gross Score'),
+            ),
+            TextField(
+              controller: _commentController,
+              decoration: const InputDecoration(labelText: 'Comment'),
             ),
             const SizedBox(height: 32),
             SizedBox(

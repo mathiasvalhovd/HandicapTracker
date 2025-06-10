@@ -36,10 +36,27 @@ class RoundsScreen extends StatelessWidget {
               final date = (data['date'] as Timestamp).toDate();
               final courseName = data['courseName'] ?? '';
               final score = data['grossScore'] ?? '';
+              final comment = data['comment'] as String?; 
 
               return ListTile(
                 title: Text(courseName),
-                subtitle: Text('${date.toLocal().toString().split(' ')[0]}  •  Score: $score'),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('${date.toLocal().toString().split(' ')[0]}  •  Score: $score'),
+                    if (comment != null && comment.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Text(
+                          comment,
+                          style: TextStyle(
+                            fontStyle: FontStyle.italic,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -79,7 +96,6 @@ class RoundsScreen extends StatelessWidget {
                         );
                         if (confirmed == true) {
                           await doc.reference.delete();
-                          // <<< THIS IS THE KEY CHANGE:
                           await recalculateHandicapHistoryForUser(uid);
 
                           ScaffoldMessenger.of(context).showSnackBar(

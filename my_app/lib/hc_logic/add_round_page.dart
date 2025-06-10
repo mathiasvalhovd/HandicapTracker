@@ -4,7 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'search_course_page.dart';
-import 'handicap_utils.dart'; // <-- Import your helper!
+import 'handicap_utils.dart'; 
 
 class AddRoundPage extends StatefulWidget {
   final String golfApiToken;
@@ -21,6 +21,7 @@ class _AddRoundPageState extends State<AddRoundPage> {
   Map<String, dynamic>? _selectedCourse;
   int? _score;
   bool _submitting = false;
+  final _commentController = TextEditingController();
 
   Future<void> _pickCourse() async {
     final course = await Navigator.push<Map<String, dynamic>>(
@@ -30,6 +31,12 @@ class _AddRoundPageState extends State<AddRoundPage> {
       ),
     );
     if (course != null) setState(() => _selectedCourse = course);
+  }
+
+  @override
+  void dispose() {
+    _commentController.dispose();
+    super.dispose();
   }
 
   @override
@@ -73,6 +80,12 @@ class _AddRoundPageState extends State<AddRoundPage> {
               validator: (val) =>
                   val == null || int.tryParse(val) == null ? 'Enter score' : null,
               onChanged: (val) => _score = int.tryParse(val),
+            ),
+            const SizedBox(height: 12),
+            TextFormField(
+              controller: _commentController,
+              decoration: const InputDecoration(labelText: 'Comment your round :)'),
+              maxLines: 2,
             ),
             const SizedBox(height: 24),
             ElevatedButton(
@@ -126,7 +139,7 @@ class _AddRoundPageState extends State<AddRoundPage> {
                           ? (tee['slope_rating'] as num).toInt()
                           : 113;
 
-                      // --- USE UTILS TO CALCULATE SCORE DIFFERENTIAL ---
+
                       final double scoreDifferential = calculateScoreDifferential(
                         grossScore: _score!,
                         courseRating: courseRating,
@@ -135,7 +148,7 @@ class _AddRoundPageState extends State<AddRoundPage> {
 
                       final uid = FirebaseAuth.instance.currentUser!.uid;
 
-                      // --- ADD ROUND DATA ---
+
                       final roundRef = await FirebaseFirestore.instance
                           .collection('users')
                           .doc(uid)
@@ -149,6 +162,7 @@ class _AddRoundPageState extends State<AddRoundPage> {
                         'slopeRating': slopeRating,
                         'scoreDifferential': scoreDifferential,
                         'createdAt': FieldValue.serverTimestamp(),
+                        'comment': _commentController.text.trim(), 
                       });
 
                       // --- IMPORTANT: Recalculate the full handicap history for all rounds! ---
