@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'search_course_page.dart';
+import 'handicap_utils.dart'; // <-- Import your helper!
 
 class AddRoundPage extends StatefulWidget {
   final String golfApiToken;
@@ -33,8 +34,7 @@ class _AddRoundPageState extends State<AddRoundPage> {
 
   @override
   Widget build(BuildContext context) {
-    final selectedCourseName =
-        _selectedCourse?['course_name'] ?? _selectedCourse?['club_name'];
+    final selectedCourseName = _selectedCourse?['course_name'] ?? _selectedCourse?['club_name'];
     final selectedAddress = _selectedCourse?['location']?['address'] ?? '';
 
     return Scaffold(
@@ -97,8 +97,7 @@ class _AddRoundPageState extends State<AddRoundPage> {
                       setState(() => _submitting = true);
 
                       final courseId = _selectedCourse!['id'].toString();
-                      final courseName = _selectedCourse!['course_name'] ??
-                          _selectedCourse!['club_name'];
+                      final courseName = _selectedCourse!['course_name'] ?? _selectedCourse!['club_name'];
 
                       // Fetch course detail for handicap calculation
                       final courseDetail = await _fetchCourseDetail(courseId);
@@ -127,28 +126,34 @@ class _AddRoundPageState extends State<AddRoundPage> {
                           ? (tee['slope_rating'] as num).toInt()
                           : 113;
 
-                      double handicap = _calculateHandicap(
+                      // --- USE UTILS TO CALCULATE SCORE DIFFERENTIAL ---
+                      final double scoreDifferential = calculateScoreDifferential(
                         grossScore: _score!,
                         courseRating: courseRating,
                         slopeRating: slopeRating,
                       );
 
                       final uid = FirebaseAuth.instance.currentUser!.uid;
-                      final roundData = {
+
+                      // --- ADD ROUND DATA ---
+                      final roundRef = await FirebaseFirestore.instance
+                          .collection('users')
+                          .doc(uid)
+                          .collection('rounds')
+                          .add({
                         'date': Timestamp.fromDate(_date!),
                         'courseId': courseId,
                         'courseName': courseName,
                         'grossScore': _score,
                         'courseRating': courseRating,
                         'slopeRating': slopeRating,
-                        'handicapAfterRound': handicap,
+                        'scoreDifferential': scoreDifferential,
                         'createdAt': FieldValue.serverTimestamp(),
-                      };
-                      await FirebaseFirestore.instance
-                          .collection('users')
-                          .doc(uid)
-                          .collection('rounds')
-                          .add(roundData);
+                      });
+
+                      // --- IMPORTANT: Recalculate the full handicap history for all rounds! ---
+                      // This will update every round's handicapIndexAfterRound (needed for charts/history).
+                      await recalculateHandicapHistoryForUser(uid);
 
                       if (mounted) setState(() => _submitting = false);
                       if (mounted) {
@@ -176,14 +181,5 @@ class _AddRoundPageState extends State<AddRoundPage> {
       }
     } catch (_) {}
     return null;
-  }
-
-  double _calculateHandicap({
-    required int grossScore,
-    required double courseRating,
-    required int slopeRating,
-  }) {
-    // USGA formula: (grossScore - courseRating) * 113 / slopeRating
-    return ((grossScore - courseRating) * 113 / slopeRating);
   }
 }
