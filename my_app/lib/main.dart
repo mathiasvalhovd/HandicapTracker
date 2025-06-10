@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:my_app/hc_logic/edit_round_screen.dart';
 import 'firebase_options.dart';
+import 'profile_screen.dart';
 
 import 'home.dart';
 import 'authentication/login.dart';
 import 'authentication/register.dart';
-import 'authentication/enter_api_key_screen.dart'; // <--- Add this import!
+import 'authentication/enter_api_key_screen.dart';
 import 'hc_logic/rounds_screen.dart';
 
 void main() async {
@@ -34,6 +35,7 @@ class MyApp extends StatelessWidget {
         'home': (context) => const HomeScreen(),
         'enter_api_key': (context) => const EnterApiKeyScreen(),
         'rounds': (context) => const RoundsScreen(),
+        'profile': (context) => const ProfileScreen(),
         // Don't put edit_round here!
       },
       onGenerateRoute: (settings) {
@@ -51,3 +53,4 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+

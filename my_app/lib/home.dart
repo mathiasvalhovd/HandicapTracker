@@ -56,7 +56,7 @@ class HomeScreen extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 16),
-                        // ---------------- Handicap Chart Section -----------------
+                        // Handicap Chart
                         StreamBuilder<QuerySnapshot>(
                           stream: FirebaseFirestore.instance
                               .collection('users')
@@ -139,7 +139,7 @@ class HomeScreen extends StatelessWidget {
                             );
                           },
                         ),
-                        // ---------------- End Handicap Chart Section -----------------
+                        // Buttons
                         const SizedBox(height: 16),
                         ElevatedButton.icon(
                           icon: const Icon(Icons.add),
@@ -171,6 +171,15 @@ class HomeScreen extends StatelessWidget {
                             Navigator.pushNamed(context, 'rounds');
                           },
                         ),
+                        const SizedBox(height: 16),
+                        ElevatedButton.icon(
+                          icon: const Icon(Icons.person),
+                          label: const Text('Manage Profile'),
+                          style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(48)),
+                          onPressed: () {
+                            Navigator.pushNamed(context, 'profile');
+                          },
+                        ),
                       ],
                     ),
                     // --- BOTTOM: Logout and email ---
@@ -200,3 +209,4 @@ class HomeScreen extends StatelessWidget {
     );
   }
 }
+
