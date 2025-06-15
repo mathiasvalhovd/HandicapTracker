@@ -72,11 +72,18 @@ class HomeScreen extends StatelessWidget {
                               );
                             }
                             final chartData = roundSnap.data!.docs
-                                .where((doc) => doc['handicapIndexAfterRound'] != null)
-                                .map((doc) => {
-                                      'date': (doc['date'] as Timestamp).toDate(),
-                                      'hc': (doc['handicapIndexAfterRound'] as num).toDouble(),
-                                    })
+                                .map((doc) {
+                              final data = doc.data() as Map<String, dynamic>;
+                              if (!data.containsKey('handicapIndexAfterRound') || data['handicapIndexAfterRound'] == null) {
+                                return null;
+                              }
+                              return {
+                                'date': (data['date'] as Timestamp).toDate(),
+                                'hc': (data['handicapIndexAfterRound'] as num).toDouble(),
+                              };
+                            })
+                                .where((item) => item != null)
+                                .cast<Map<String, dynamic>>()
                                 .toList();
 
                             if (chartData.length < 2) {
@@ -95,9 +102,9 @@ class HomeScreen extends StatelessWidget {
                                           .asMap()
                                           .entries
                                           .map((entry) => FlSpot(
-                                                entry.key.toDouble(),
-                                                (entry.value['hc'] as num).toDouble(),
-                                              ))
+                                        entry.key.toDouble(),
+                                        (entry.value['hc'] as num).toDouble(),
+                                      ))
                                           .toList(),
                                       isCurved: true,
                                       color: Colors.deepPurple,
@@ -209,4 +216,3 @@ class HomeScreen extends StatelessWidget {
     );
   }
 }
-
