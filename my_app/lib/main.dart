@@ -3,7 +3,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:my_app/hc_logic/edit_round_screen.dart';
 import 'firebase_options.dart';
 import 'profile_screen.dart';
-
 import 'home.dart';
 import 'authentication/login.dart';
 import 'authentication/register.dart';
@@ -53,4 +52,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-

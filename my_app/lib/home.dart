@@ -8,45 +8,121 @@ import 'hc_logic/add_round_page.dart';
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
-  void logout(context) async {
+  static const Color kPurple = Colors.deepPurple;
+  static const Color kPurpleLight = Color(0xFFF3E5F5);
+  static const String kEmptyStateImg =
+      'https://i.pinimg.com/736x/bf/63/d9/bf63d91e871f03ffcf37614460530056.jpg';
+
+  void _logout(BuildContext context) async {
     await FirebaseAuth.instance.signOut();
     Navigator.pushReplacementNamed(context, 'login');
+  }
+
+  Future<void> _showProfileMenu(BuildContext context, Offset position) async {
+    final choice = await showMenu<String>(
+      context: context,
+      position: RelativeRect.fromLTRB(position.dx, position.dy, position.dx, position.dy),
+      items: const [
+        PopupMenuItem<String>(value: 'manage', child: Text('Manage Profile')),
+        PopupMenuItem<String>(value: 'logout', child: Text('Logout')),
+      ],
+    );
+
+    switch (choice) {
+      case 'manage':
+        Navigator.pushNamed(context, 'profile');
+        break;
+      case 'logout':
+        _logout(context);
+        break;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<User?>(
       stream: FirebaseAuth.instance.authStateChanges(),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return const LoginScreen();
-        }
-        final uid = snapshot.data!.uid;
-        return Scaffold(
-          appBar: AppBar(
-            title: const Text('Account Information'),
-            centerTitle: true,
-          ),
-          body: StreamBuilder<DocumentSnapshot>(
-            stream: FirebaseFirestore.instance.collection('users').doc(uid).snapshots(),
-            builder: (context, userSnapshot) {
-              String hcText = 'Calculating...';
-              if (userSnapshot.hasData && userSnapshot.data!.data() != null) {
-                final data = userSnapshot.data!.data() as Map<String, dynamic>;
-                final hc = data['handicapIndex'];
-                hcText = hc != null
-                    ? 'Handicap Index: ${hc.toStringAsFixed(1)}'
-                    : 'Handicap Index: N/A';
-              }
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    // --- TOP: Handicap Index + CHART + Buttons ---
-                    Column(
+      builder: (context, authSnap) {
+        if (!authSnap.hasData) return const LoginScreen();
+        final uid = authSnap.data!.uid;
+
+        return StreamBuilder<DocumentSnapshot>(
+          stream: FirebaseFirestore.instance.collection('users').doc(uid).snapshots(),
+          builder: (context, userSnap) {
+            if (!userSnap.hasData) {
+              return const Scaffold(
+                body: Center(child: CircularProgressIndicator()),
+              );
+            }
+
+            final Map<String, dynamic> userData =
+                userSnap.data!.data() as Map<String, dynamic>? ?? {};
+            final String username = userData['name'] ?? 'User';
+            final String? photoUrl = userData['photoUrl'];
+            final hc = userData['handicapIndex'];
+            final String hcText = (hc is num)
+                ? 'Handicap Index: ${hc.toStringAsFixed(1)}'
+                : 'Handicap Index: N/A';
+
+            return Scaffold(
+              backgroundColor: Colors.transparent,
+              appBar: AppBar(
+                backgroundColor: Colors.deepPurple,
+                elevation: 0,
+                centerTitle: true,
+                title: const Text(
+                  'Handicap Tracker',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              extendBodyBehindAppBar: true,
+              body: Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [kPurpleLight, kPurpleLight], // Purple to blue
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                ),
+                child: SafeArea(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                    child: Column(
                       children: [
-                        const SizedBox(height: 16),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            // Greeting text
+                            Text(
+                              'Hello, $username!',
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.deepPurple,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            // Profile picture
+                            GestureDetector(
+                              onTapDown: (details) =>
+                                  _showProfileMenu(context, details.globalPosition),
+                              child: CircleAvatar(
+                                radius: 28,
+                                backgroundColor: kPurpleLight,
+                                backgroundImage: (photoUrl != null && photoUrl.isNotEmpty)
+                                    ? NetworkImage(photoUrl)
+                                    : null,
+                                child: (photoUrl == null || photoUrl.isEmpty)
+                                    ? const Icon(Icons.person, color: kPurple)
+                                    : null,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 24),
                         Text(
                           hcText,
                           style: const TextStyle(
@@ -55,8 +131,7 @@ class HomeScreen extends StatelessWidget {
                             color: Colors.deepPurple,
                           ),
                         ),
-                        const SizedBox(height: 16),
-                        // Handicap Chart
+                        const SizedBox(height: 24),
                         StreamBuilder<QuerySnapshot>(
                           stream: FirebaseFirestore.instance
                               .collection('users')
@@ -66,53 +141,78 @@ class HomeScreen extends StatelessWidget {
                               .snapshots(),
                           builder: (context, roundSnap) {
                             if (!roundSnap.hasData || roundSnap.data!.docs.isEmpty) {
-                              return const Padding(
-                                padding: EdgeInsets.symmetric(vertical: 24),
-                                child: Text('No rounds to chart yet.'),
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 24),
+                                child: Column(
+                                  children: const [
+                                    Image(
+                                      image: NetworkImage(kEmptyStateImg),
+                                      height: 250,
+                                      fit: BoxFit.contain,
+                                    ),
+                                    SizedBox(height: 28),
+                                    Text(
+                                      'Play more rounds to see progress!',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                        color: Colors.deepPurple,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               );
                             }
+
                             final chartData = roundSnap.data!.docs
                                 .map((doc) {
-                              final data = doc.data() as Map<String, dynamic>;
-                              if (!data.containsKey('handicapIndexAfterRound') || data['handicapIndexAfterRound'] == null) {
-                                return null;
-                              }
+                              final d = doc.data() as Map<String, dynamic>;
+                              if (d['handicapIndexAfterRound'] == null) return null;
                               return {
-                                'date': (data['date'] as Timestamp).toDate(),
-                                'hc': (data['handicapIndexAfterRound'] as num).toDouble(),
+                                'date': (d['date'] as Timestamp).toDate(),
+                                'hc': (d['handicapIndexAfterRound'] as num).toDouble(),
                               };
                             })
-                                .where((item) => item != null)
-                                .cast<Map<String, dynamic>>()
+                                .whereType<Map<String, dynamic>>()
                                 .toList();
 
                             if (chartData.length < 2) {
-                              return const Padding(
-                                padding: EdgeInsets.symmetric(vertical: 24),
-                                child: Text('Play more rounds to see progress!'),
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 24),
+                                child: Column(
+                                  children: const [
+                                    Image(
+                                      image: NetworkImage(kEmptyStateImg),
+                                      height: 250,
+                                      fit: BoxFit.contain,
+                                    ),
+                                    SizedBox(height: 28),
+                                    Text(
+                                      'Play more rounds to see progress!',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 20,
+                                        color: Colors.deepPurple,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               );
                             }
+
+                            final minY = chartData
+                                .map((e) => e['hc'] as double)
+                                .reduce((a, b) => a < b ? a : b) -
+                                2;
+                            final maxY = chartData
+                                .map((e) => e['hc'] as double)
+                                .reduce((a, b) => a > b ? a : b) +
+                                2;
+
                             return SizedBox(
                               height: 200,
                               child: LineChart(
                                 LineChartData(
-                                  lineBarsData: [
-                                    LineChartBarData(
-                                      spots: chartData
-                                          .asMap()
-                                          .entries
-                                          .map((entry) => FlSpot(
-                                        entry.key.toDouble(),
-                                        (entry.value['hc'] as num).toDouble(),
-                                      ))
-                                          .toList(),
-                                      isCurved: true,
-                                      color: Colors.deepPurple,
-                                      barWidth: 3,
-                                      dotData: FlDotData(show: true),
-                                      belowBarData: BarAreaData(show: false),
-                                    ),
-                                  ],
                                   gridData: FlGridData(show: false),
                                   titlesData: FlTitlesData(
                                     leftTitles: AxisTitles(
@@ -121,50 +221,78 @@ class HomeScreen extends StatelessWidget {
                                     bottomTitles: AxisTitles(
                                       sideTitles: SideTitles(
                                         showTitles: true,
-                                        interval: (chartData.length > 7)
+                                        interval: chartData.length > 7
                                             ? (chartData.length / 7).ceilToDouble()
                                             : 1,
                                         getTitlesWidget: (value, meta) {
                                           final idx = value.toInt();
-                                          if (idx < 0 || idx >= chartData.length) return Container();
+                                          if (idx < 0 || idx >= chartData.length) {
+                                            return Container();
+                                          }
                                           final date = chartData[idx]['date'] as DateTime;
                                           return Padding(
-                                            padding: const EdgeInsets.only(top: 8.0),
+                                            padding: const EdgeInsets.only(top: 8),
                                             child: Text(
                                               '${date.month}/${date.day}',
-                                              style: const TextStyle(fontSize: 11),
+                                              style: const TextStyle(fontSize: 11, color: Colors.white),
                                             ),
                                           );
                                         },
                                       ),
                                     ),
                                   ),
-                                  minY: chartData.map((e) => (e['hc'] as num).toDouble()).reduce((a, b) => a < b ? a : b) - 2,
-                                  maxY: chartData.map((e) => (e['hc'] as num).toDouble()).reduce((a, b) => a > b ? a : b) + 2,
+                                  minY: minY,
+                                  maxY: maxY,
+                                  lineBarsData: [
+                                    LineChartBarData(
+                                      spots: chartData
+                                          .asMap()
+                                          .entries
+                                          .map((entry) => FlSpot(
+                                        entry.key.toDouble(),
+                                        entry.value['hc'] as double,
+                                      ))
+                                          .toList(),
+                                      isCurved: true,
+                                      color: Colors.white,
+                                      barWidth: 3,
+                                      dotData: FlDotData(show: true),
+                                      belowBarData: BarAreaData(
+                                        show: true,
+                                        color: Colors.white.withOpacity(0.2),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             );
                           },
                         ),
-                        // Buttons
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 24),
                         ElevatedButton.icon(
                           icon: const Icon(Icons.add),
                           label: const Text('Add Round'),
-                          style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(48)),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.deepPurple,
+                            foregroundColor: Colors.white,
+                            minimumSize: const Size.fromHeight(48),
+                          ),
                           onPressed: () async {
-                            final userDoc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+                            final userDoc = await FirebaseFirestore.instance
+                                .collection('users')
+                                .doc(uid)
+                                .get();
                             final golfApiToken = userDoc.data()?['golfCourseApiToken'];
                             if (golfApiToken == null) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('GolfCourseAPI token missing. Please activate your account.')),
+                                const SnackBar(content: Text('GolfCourseAPI token missing.')),
                               );
                               return;
                             }
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => AddRoundPage(golfApiToken: golfApiToken),
+                                builder: (_) => AddRoundPage(golfApiToken: golfApiToken),
                               ),
                             );
                           },
@@ -173,44 +301,22 @@ class HomeScreen extends StatelessWidget {
                         ElevatedButton.icon(
                           icon: const Icon(Icons.golf_course),
                           label: const Text('View Rounds'),
-                          style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(48)),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.deepPurple.withOpacity(0.85),
+                            foregroundColor: Colors.white,
+                            minimumSize: const Size.fromHeight(48),
+                          ),
                           onPressed: () {
                             Navigator.pushNamed(context, 'rounds');
                           },
                         ),
-                        const SizedBox(height: 16),
-                        ElevatedButton.icon(
-                          icon: const Icon(Icons.person),
-                          label: const Text('Manage Profile'),
-                          style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(48)),
-                          onPressed: () {
-                            Navigator.pushNamed(context, 'profile');
-                          },
-                        ),
                       ],
                     ),
-                    // --- BOTTOM: Logout and email ---
-                    Column(
-                      children: [
-                        Text(
-                          'Logged in as ${snapshot.data?.email}',
-                          style: TextStyle(color: Colors.grey[700]),
-                        ),
-                        const SizedBox(height: 8),
-                        OutlinedButton(
-                          onPressed: () => logout(context),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: Colors.red,
-                          ),
-                          child: const Text('Logout'),
-                        ),
-                      ],
-                    ),
-                  ],
+                  ),
                 ),
-              );
-            },
-          ),
+              ),
+            );
+          },
         );
       },
     );
