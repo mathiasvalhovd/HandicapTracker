@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
+import 'package:my_app/home.dart';
 import 'profile_controller.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -14,9 +14,10 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   late final ProfileController _controller;
 
-  static const Color lightBlue = Color(0xFFE3F2FD);
-  static const Color darkBlue = Color(0xFF0D47A1);
-  static const Color accentBlue = Color(0xFF1976D2);
+
+  static const Color kPurple = Colors.deepPurple;
+  static const Color kPurpleLight = Color(0xFFF3E5F5); // soft lavender
+
 
   @override
   void initState() {
@@ -50,13 +51,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
           fillColor: Colors.white,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
-            borderSide: const BorderSide(color: accentBlue),
+            borderSide: const BorderSide(color: Colors.deepPurpleAccent),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
-            borderSide: const BorderSide(color: darkBlue, width: 2),
+            borderSide: const BorderSide(color: Colors.deepPurple, width: 2),
           ),
-          labelStyle: const TextStyle(color: darkBlue),
+          labelStyle: const TextStyle(color: Colors.deepPurple),
         ),
       ),
     );
@@ -78,7 +79,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             offset: const Offset(0, 3),
           ),
         ],
-        border: Border.all(color: accentBlue.withOpacity(0.3)),
+        border: Border.all(color: Colors.deepPurpleAccent.withOpacity(0.3)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -90,7 +91,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 Text(label,
                     style: const TextStyle(
                         fontWeight: FontWeight.bold,
-                        color: darkBlue,
+                        color: Colors.deepPurple,
                         fontSize: 14)),
                 const SizedBox(height: 6),
                 Text(value.isNotEmpty ? value : 'No $label yet',
@@ -113,15 +114,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: lightBlue,
+      backgroundColor: HomeScreen.kPurpleLight,
       appBar: AppBar(
         centerTitle: true,
         title: const Text('User Settings', style: TextStyle(color: Colors.white)),
-        backgroundColor: darkBlue,
+        backgroundColor: Colors.deepPurple,
         elevation: 0,
       ),
       body: _controller.loading
-          ? const Center(child: CircularProgressIndicator(color: darkBlue))
+          ? const Center(child: CircularProgressIndicator(color: Colors.deepPurple))
           : SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -180,7 +181,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   right: 16,
                   child: CircleAvatar(
                     radius: 20,
-                    backgroundColor: darkBlue.withOpacity(0.8),
+                    backgroundColor: Colors.deepPurple.withOpacity(0.8),
                     child: IconButton(
                       padding: EdgeInsets.zero,
                       iconSize: 20,
@@ -218,7 +219,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: Align(
                   alignment: Alignment.centerRight,
                   child: IconButton(
-                    icon: const Icon(Icons.edit, color: darkBlue),
+                    icon: const Icon(Icons.edit, color: Colors.deepPurple),
                     tooltip: 'Edit Profile',
                     onPressed: () =>
                         setState(() => _controller.isEditing = true),
@@ -264,7 +265,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 14,
-                      color: darkBlue,
+                      color: Colors.deepPurple,
                     ),
                   ),
                 ),
@@ -276,7 +277,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(16),
                     border:
-                    Border.all(color: accentBlue.withOpacity(0.3)),
+                    Border.all(color: Colors.deepPurpleAccent.withOpacity(0.3)),
                   ),
                   child: DropdownButtonHideUnderline(
                     child: DropdownButton<String>(
@@ -319,7 +320,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                        color: accentBlue.withOpacity(0.3)),
+                        color: Colors.deepPurpleAccent.withOpacity(0.3)),
                   ),
                   child: DropdownButtonHideUnderline(
                     child: DropdownButton<String>(
@@ -361,7 +362,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   width: double.infinity,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: darkBlue,
+                      backgroundColor: Colors.deepPurple,
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
