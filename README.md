@@ -19,10 +19,6 @@ The aim for the application is serves as a personal performance tracker for golf
 4. View rounds list
 5. Profile Management / User settings
 
-# Member Contribution
-1. **Felly** : Handled user authentication (login/register) using firebase authentication and profile management (create, update, delete photo, display data). Also responsible for designing and building the user interface.
-2. **Mathias** : Developed the rounds tracking, handicap calculation, and splash features. Also implemented APIs for user authentication and handicap processing.
-
 # Screenshot
 
 **Splash Screen**
@@ -64,6 +60,22 @@ The aim for the application is serves as a personal performance tracker for golf
 **Delete Photo**
 
 ![image](https://github.com/user-attachments/assets/8c588fb0-8be0-4a8e-a813-f9d19159f1ce)
+
+
+
+# Member Contribution
+1. **Fellyla Fiorenza - 5025221110** :
+   - Created user authentication (login/register) using firebase authentication
+   - Crated profile management (create, update, delete photo, display data).
+   - Responsible for designing and building the user interface.
+   - Created Use case and activity diagram
+   - Wrote down README report
+3. **Mathias August Myhrstad Valhovd - 5999242050** :
+   - Developed the rounds tracking and handicap calculation
+   - Created splash screen
+   - Provide ideas for the application
+   - Created and conneted database
+   - Also implemented APIs for user authentication and handicap processing.
 
 
 
